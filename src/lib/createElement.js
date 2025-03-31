@@ -1,4 +1,4 @@
-// import { addEvent } from "./eventManager";
+import { addEvent } from "./eventManager";
 
 export function createElement(vNode) {
   if (typeof vNode === "boolean" || vNode === undefined || vNode === null) {
@@ -13,6 +13,7 @@ export function createElement(vNode) {
     throw Error;
   } else {
     const element = document.createElement(vNode.type);
+
     if (vNode.props) {
       updateAttributes(element, vNode.props);
     }
@@ -25,7 +26,13 @@ export function createElement(vNode) {
 
 function updateAttributes($el, props) {
   Object.entries(props).forEach(([key, value]) => {
-    const translatedKey = key === "className" ? "class" : key;
-    $el.setAttribute(translatedKey, value);
+    if (key.startsWith("on") && typeof value === "function") {
+      const eventType = key.slice(2).toLowerCase();
+      addEvent($el, eventType, value);
+    } else if (key === "className") {
+      $el.setAttribute("class", value);
+    } else {
+      $el.setAttribute(key, value);
+    }
   });
 }
