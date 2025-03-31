@@ -26,7 +26,9 @@ export function removeEvent(element, eventType, handler) {
   );
 
   if (index >= 0) {
-    eventMap[eventType][index].root.removeEventListener(eventType, handler);
+    if (eventMap[eventType][index].root) {
+      eventMap[eventType][index].root.removeEventListener(eventType, handler);
+    }
     eventMap[eventType].splice(index, 1);
   }
 }
