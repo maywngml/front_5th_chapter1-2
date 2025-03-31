@@ -1,34 +1,37 @@
-const eventMap = {};
+const eventTypes = [];
+const elementMap = new Map();
+
+const handleEvent = (e) => {
+  const targetMap = elementMap.get(e.target);
+  const handler = targetMap?.get(e.type);
+  if (handler) {
+    handler.call(e.target, e);
+  }
+};
 
 export function setupEventListeners(root) {
-  Object.entries(eventMap).forEach(([eventType, events], index) => {
-    eventMap[eventType][index].root = root;
-    root.addEventListener(eventType, (e) => {
-      events.forEach(({ element, handler }) => {
-        if (e.target === element) {
-          handler();
-        }
-      });
-    });
+  eventTypes.forEach((eventType) => {
+    root.addEventListener(eventType, handleEvent);
   });
 }
 
 export function addEvent(element, eventType, handler) {
-  eventMap[eventType] = eventMap[eventType] ?? [];
-  eventMap[eventType].push({ element, handler });
+  if (!eventTypes.includes(eventType)) {
+    eventTypes.push(eventType);
+  }
+  const targetMap = elementMap.get(element) || new Map();
+  if (targetMap.get(eventType) === handler) return;
+  targetMap.set(eventType, handler);
+  elementMap.set(element, targetMap);
 }
 
 export function removeEvent(element, eventType, handler) {
-  const index = eventMap[eventType].findIndex(
-    ({ element: currentElement, handler: currentHandler }) =>
-      currentElement.isSameNode(element) &&
-      currentHandler.toString() === handler.toString(),
-  );
-
-  if (index >= 0) {
-    if (eventMap[eventType][index].root) {
-      eventMap[eventType][index].root.removeEventListener(eventType, handler);
-    }
-    eventMap[eventType].splice(index, 1);
+  const targetMap = elementMap.get(element);
+  if (!targetMap) return;
+  if (targetMap.get(eventType) === handler) {
+    targetMap.delete(eventType);
+  }
+  if (targetMap.size === 0) {
+    elementMap.delete(element);
   }
 }
