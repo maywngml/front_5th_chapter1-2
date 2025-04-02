@@ -4,16 +4,22 @@ import { toTimeFormat } from "../../utils/index.js";
 import { globalStore } from "../../stores/globalStore.js";
 
 export const Post = ({
+  id,
   author,
   time,
   content,
   likeUsers,
   activationLike = false,
 }) => {
-  const { isLoggedIn } = globalStore.getState();
+  const { currentUser, loggedIn } = globalStore.getState();
+  const { togglePostLike } = globalStore.actions;
 
   const handleClick = () => {
-    isLoggedIn ? alert("로그인 전이시네요") : alert("로그인 후 이용해주세요");
+    if (loggedIn) {
+      togglePostLike(currentUser.username, id);
+    } else {
+      alert("로그인 후 이용해주세요");
+    }
   };
 
   return (
